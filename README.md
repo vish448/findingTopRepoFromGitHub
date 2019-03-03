@@ -1,4 +1,4 @@
-## This repo will help to find top started repos from github
+## This repo will help to find top stared repos from github
 
 ## Functions
 <ul>
