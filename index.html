@@ -11,13 +11,25 @@
 
   <script type="text/babel">
 
+    function LanguageCategories(props) {
+      return (
+
+          <ul>
+            {props.categoriesList.languages.map((category) =>
+              <a href='#'>
+                <li key={category}>{category}</li>
+              </a>
+            )}
+            </ul>
+          )
+    }
+
     class App extends React.Component {
       constructor(props) {
         super(props)
         this.state = {
           appName : 'Finding Popular GitHub Repos',
           languages : ['All', 'Javascript','Bootstrap','Ruby','React'],
-          type : 'language'
         }
       }
 
@@ -25,14 +37,9 @@
         return (
           <div>
             <h1>{this.state.appName}</h1>
-            <ul>
-              {this.state.languages.map((x) =>
-                <a href='#'>
-                  <li key={x}>{x}</li>
-                </a>
-              )}
-              </ul>
+            <LanguageCategories categoriesList = {this.state} />
           </div>
+
         )
       }
     }
