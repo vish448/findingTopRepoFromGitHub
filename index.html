@@ -13,15 +13,29 @@
 
     function LanguageCategories(props) {
       return (
-
           <ul>
             {props.categoriesList.languages.map((category) =>
-              <a href='#'>
+              <button onClick = {() => { props.onCategoryClick(category) }} >
                 <li key={category}>{category}</li>
-              </a>
+              </button>
             )}
             </ul>
           )
+    }
+
+    class ShowPopularRepos extends React.Component {
+      constructor(props) {
+        super(props)
+
+      }
+
+      render() {
+        return (
+          <div>
+            <h1>Show Popular Repos</h1>
+          </div>
+        )
+      }
     }
 
     class App extends React.Component {
@@ -30,14 +44,25 @@
         this.state = {
           appName : 'Finding Popular GitHub Repos',
           languages : ['All', 'Javascript','Bootstrap','Ruby','React'],
+          currentCategory : 'All',
         }
+        this.handleCategoryClick = this.handleCategoryClick.bind(this)
+      }
+
+      handleCategoryClick(category) {
+        this.setState({
+          currentCategory: category
+        })
       }
 
       render() {
         return (
           <div>
             <h1>{this.state.appName}</h1>
-            <LanguageCategories categoriesList = {this.state} />
+            <LanguageCategories
+              categoriesList = {this.state}
+              onCategoryClick = {this.handleCategoryClick} />
+            <h1>{this.state.currentCategory}</h1>
           </div>
 
         )
