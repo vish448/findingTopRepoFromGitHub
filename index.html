@@ -9,29 +9,149 @@
 <body>
   <div id="app"></div>
 
+  <script>
+    window.API = {
+      fetchPopularRepos(language = 'all') {
+        const encodedURI = encodeURI(`https://api.github.com/search/repositories?q=stars:>1+language:${language}&sort=stars&order=desc&type=Repositories`)
+        return fetch(encodedURI)
+          .then((data) => data.json())
+          .then((repos) => repos.items)
+          .catch((error) => {
+            console.warn(error)
+            return null
+          });
+      }
+    }
+  </script>
+
   <script type="text/babel">
+
+    function LanguageCategories(props) {
+      return (
+          <ul>
+            {props.categoriesList.languages.map((category) =>
+                <li key={category} onClick = {() => { props.onCategoryClick(category) }}>{category}</li>
+
+            )}
+            </ul>
+          )
+    }
+
+    function RepoGrid (props) {
+      return (
+        <ul style={{display: 'flex', flexWrap: 'wrap'}}>
+          {props.repos.map(({ name, owner, stargazers_count, html_url }) =>
+            <li key={name} style={{margin: 30}}>
+              <ul>
+                <li><a href={html_url}>{name}</a></li>
+                <li>@{owner.login}</li>
+                <li>{stargazers_count} stars</li>
+              </ul>
+            </li>
+          )}
+        </ul>
+      )
+    }
+
+    class Loading extends React.Component {
+      constructor(props){
+        super(props)
+        this.state = {
+          text: 'Loading',
+        }
+      }
+
+      componentDidMount(){
+        const stopper = this.state.text + '...'
+
+        this.interval = window.setInterval(()=> {
+          this.state.text === stopper
+          ? this.setState({text:'Loading'})
+          : this.setState((currentState) => {
+            return {
+              text: currentState.text + '.'
+            }
+          })
+        },300)
+      }
+
+      componentWillUnmount() {
+        window.clearInterval(this.interval)
+      }
+
+      render() {
+        return (
+          <p>{this.state.text}</p>
+        )
+      }
+    }
 
     class App extends React.Component {
       constructor(props) {
         super(props)
         this.state = {
           appName : 'Finding Popular GitHub Repos',
+          repos: [],
           languages : ['All', 'Javascript','Bootstrap','Ruby','React'],
-          type : 'language'
+          currentCategory : 'All',
+          loading: true,
+        }
+        this.handleCategoryClick = this.handleCategoryClick.bind(this)
+        this.fetchRepos = this.fetchRepos.bind(this)
+      }
+
+      componentDidMount(){
+        console.log('--Component did mount--')
+        this.fetchRepos(this.state.currentCategory)
+      }
+
+      componentDidUpdate (prevProps, prevState) {
+        if (prevState.currentCategory !== this.state.currentCategory) {
+          this.fetchRepos(this.state.currentCategory)
         }
       }
 
+      fetchRepos(lang){
+        console.log('inside fetchRepos')
+
+        this.setState({
+          loading: true
+        })
+        window.API.fetchPopularRepos(lang)
+          .then((data) => {
+            console.log(data)
+            this.setState({
+              loading: false,
+              repos : data
+            })
+          })
+      }
+
+      handleCategoryClick(category) {
+        this.setState({
+          currentCategory: category
+        })
+      }
+
       render() {
+        console.log('--Calling render--')
+        console.log('repos' + this.state.repos.map(repo => repo.name))
         return (
           <div>
             <h1>{this.state.appName}</h1>
-            <ul>
-              {this.state.languages.map((x) =>
-                <a href='#'>
-                  <li key={x}>{x}</li>
-                </a>
-              )}
-              </ul>
+            <LanguageCategories
+              categoriesList = {this.state}
+              onCategoryClick = {this.handleCategoryClick} />
+            {this.state.loading === true
+              ? <Loading />
+              : <div>
+                  <h1 style = {{textAlign:'center'}}>
+                    {this.state.currentCategory}
+                  </h1>
+                  <RepoGrid repos={this.state.repos} />
+                </div>
+              }
+
           </div>
         )
       }
